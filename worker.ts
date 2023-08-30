@@ -84,7 +84,7 @@ async function vlessOverWSHandler(request) {
     //获取请求头中的ws子协议
     const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
 
-    //创建一个可读的ws流：将服务端收到客户端请求的消息和子协议写入流中，以及实现关闭流等操作
+    //创建一个可读的ws流：将服务端收到的客户端请求的消息和子协议写入流中，以及实现关闭流等操作
     const readableWebSocketStream = makeReadableWebSocketStream(webSocket, earlyDataHeader, log);
 
     //定义一个空的ws连接
@@ -104,7 +104,7 @@ async function vlessOverWSHandler(request) {
             if (isDns && udpStreamWrite) {
                 return udpStreamWrite(chunk);
             }
-            //如果ws连接中保存着相应的远端写入器则将信息写入
+            //在建立与代理ip的连接之后，将客户端的请求数据写入到代理ip中
             if (remoteSocketWapper.value) {
                 const writer = remoteSocketWapper.value.writable.getWriter()
                 await writer.write(chunk);
@@ -198,6 +198,7 @@ async function handleTCPOutBound(remoteSocket, addressRemote, portRemote, rawCli
             hostname: address,
             port: port,
         });
+        //将代理ip的socket对象保存到remoteSocket中
         remoteSocket.value = tcpSocket;
         log(`connected to ${address}:${port}`);
         const writer = tcpSocket.writable.getWriter();
